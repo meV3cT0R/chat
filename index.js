@@ -28,20 +28,35 @@ app.get("/messages", async (req, res) => {
   }
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("A user connected");
 
+  try {
+    // Retrieve the last 10 messages from the database
+    const messages = await db.Message.findAll({
+      order: [["timestamp", "DESC"]],
+      limit: 10,
+    });
+    console.log("from server side ", messages.reverse());
+    socket.emit("chat history", messages.reverse());
+  } catch (err) {
+    console.error("Error loading messages from database:", err);
+  }
   socket.on("set username", (username) => {
     socket.username = username;
+    console.log(username);
   });
 
   socket.on("chat message", async (msg) => {
     try {
       // Save message using Sequelize
-      await db.Message.create({ username: socket.username, message: msg });
-
+      await db.Message.create({
+        username: socket.username || "anonymous",
+        message: msg,
+      });
       // Broadcast the message to all connected users
       io.emit("chat message", { username: socket.username, msg });
+      console.log("hello");
     } catch (err) {
       console.error(err);
     }

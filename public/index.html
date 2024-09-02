@@ -12,6 +12,12 @@
     </style>
   </head>
   <body>
+    <div>
+      <input type="text" id="username"/>
+      <button id="usernameSubmit"> submit </button>
+    </div>
+    <div id="name">
+    </div>
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" placeholder="Type a message" /><button>Send</button>
@@ -23,6 +29,13 @@
       const input = document.getElementById('input');
       const messages = document.getElementById('messages');
 
+        document.getElementById("usernameSubmit").addEventListener("click", function(e){
+                e.preventDefault();
+                const name = document.getElementById("username").value;
+                console.log(name);
+                socket.emit('set username', name);
+                document.getElementById("name").innerHTML = name;
+        })
       form.addEventListener('submit', function(e) {
         e.preventDefault();
         if (input.value) {
@@ -30,10 +43,17 @@
           input.value = '';
         }
       });
-
+      socket.on('chat history',function(msg) {
+          for(const val of msg) {
+                const item = document.createElement("li");
+              item.textContent = `${val.username} : ${val.message}`;
+              messages.appendChild(item);
+          }
+      });
       socket.on('chat message', function(msg) {
         const item = document.createElement('li');
-        item.textContent = msg;
+          item.textContent = `${msg.username} : ${msg.msg}`;
+          console.log(msg);
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       });
