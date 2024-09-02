@@ -37,7 +37,6 @@ io.on("connection", async (socket) => {
       order: [["timestamp", "DESC"]],
       limit: 10,
     });
-    console.log("from server side ", messages.reverse());
     socket.emit("chat history", messages.reverse());
   } catch (err) {
     console.error("Error loading messages from database:", err);
